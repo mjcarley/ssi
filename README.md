@@ -54,7 +54,7 @@ line giving
 
 `x y z u v`
 
-where the $(x,y,z)$ is the spatial position of a node and the surface
+where $(x,y,z)$ is the spatial position of a node and the surface
 parametric coordinates are $(u,v)$.
 
 Intersection points are output as 

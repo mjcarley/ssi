@@ -96,13 +96,13 @@ int wing_func(double u, double v, double *x, double *xu, double *xv,
 
   sgn = ( u >= 0 ? 1 : -1 ) ;
   u = fabs(u) ;
-  x[0] =     2*(u-0.5) ;
-  x[1] = sgn*2*sqrt(u)*(1-u)*0.2 + 0.0*u ;
-  x[2] =     v ;
+  x[2] =     2*(u-0.5) ;
+  x[0] = sgn*2*sqrt(u)*(1-u)*0.2 + 0.0*u ;
+  x[1] =     v ;
 
   if ( c == NULL ) return 0 ;
 
-  x[0] *= c[3] ; x[1] *= c[3] ; x[2] *= c[4] ;
+  x[2] *= c[3] ; x[0] *= c[3] ; x[1] *= c[4] ;
 
   ssi_vector_shift(x, c) ;
   
@@ -178,6 +178,23 @@ static double distance4(double *x, double *y)
   return d ;
 }
 
+static void list_surfaces(void)
+
+{
+  fprintf(stderr,
+	  "Surface functions:\n"
+	  "  sphere(x,y,z,D)\n"
+	  "  cylinder(x,y,z,r,L)\n"
+	  "  wing(x,y,z,c,L)\n\n"
+	  "  (x,y,z) coordinates of centre of sphere, centre of cylinder end,\n"
+	  "          or wing section leading edge;\n"
+	  "  D       sphere diameter\n"
+	  "  L       cylinder or wing length\n"
+	  "  c       wing chord\n") ;
+  
+  return ;
+}
+
 int main(int argc, char **argv)
 
 {
@@ -204,7 +221,7 @@ int main(int argc, char **argv)
   sfunc2 = cylinder_func ;
   c2[0] = 0.4 ; c2[1] = 0.1 ; c2[2] = -1.1 ; c2[3] = 0.5 ; c2[4] = 2.0 ;
 
-  while ( (ch = getopt(argc, argv, "D:d:S:s:t:")) != EOF ) {
+  while ( (ch = getopt(argc, argv, "D:d:lS:s:t:")) != EOF ) {
     switch ( ch ) {
     default: fprintf(stderr,
 		     "%s: unrecognised option `%c'\n", progname, ch) ;
@@ -212,6 +229,7 @@ int main(int argc, char **argv)
       break ;
     case 'D': depth1 = atoi(optarg) ; break ;
     case 'd': depth2 = atoi(optarg) ; break ;
+    case 'l': list_surfaces() ; return 0 ; break ;
     case 'S': parse_surface(optarg, &sfunc1, c1) ; break ;
     case 's': parse_surface(optarg, &sfunc2, c2) ; break ;
     case 't': tol = atof(optarg) ; break ;

@@ -624,14 +624,14 @@ int ssi_surface_surface_intersection(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
 
   for ( i = 0 ; i < n ; i ++ ) {
     for ( j = 0 ; j <= n ; j += n ) {
-      /* (*nc) += find_intersection_swap(bvh2, bvh1, n, j+0, i+0, j+0, i+1, */
-      /* 				      &(c[(*nc)*cstr]), tol, 2, work) ; */
-      /* (*nc) += find_intersection_swap(bvh2, bvh1, n, i+0, j+0, i+1, j+0, */
-      /* 				      &(c[(*nc)*cstr]), tol, 3, work) ; */
       (*nc) += find_intersection_swap(bvh2, bvh1, n, j+0, i+0, j+0, i+1,
-				      &(c[(*nc)*cstr]), tol, 3, work) ;
-      (*nc) += find_intersection_swap(bvh2, bvh1, n, i+0, j+0, i+1, j+0,
 				      &(c[(*nc)*cstr]), tol, 2, work) ;
+      (*nc) += find_intersection_swap(bvh2, bvh1, n, i+0, j+0, i+1, j+0,
+				      &(c[(*nc)*cstr]), tol, 3, work) ;
+      /* (*nc) += find_intersection_swap(bvh2, bvh1, n, j+0, i+0, j+0, i+1, */
+      /* 				      &(c[(*nc)*cstr]), tol, 3, work) ; */
+      /* (*nc) += find_intersection_swap(bvh2, bvh1, n, i+0, j+0, i+1, j+0, */
+      /* 				      &(c[(*nc)*cstr]), tol, 2, work) ; */
     }
   }
   
