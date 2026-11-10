@@ -9,6 +9,13 @@
 #define MAX(_a,_b) ((_a) > (_b) ? (_a) : (_b))
 #define ABS(_a)    (((_a) >= 0) ? (_a) : (-(_a)))
 
+/**
+ * @ingroup functions
+ *
+ * @{
+ * 
+ */
+
 static int point_is_boundary(double *v, int vstr, int i)
 
 {
@@ -19,6 +26,15 @@ static int point_is_boundary(double *v, int vstr, int i)
   
   return 0 ;
 }
+
+/** 
+ * Allocate a workspace for crawling on intersection curves
+ * 
+ * @param nvmax maximum number of vertices on a curve;
+ * @param nemax maximum number of edgees on a curve;
+ * 
+ * @return newly allocated ::ssi_crawl_workspace_t
+ */
 
 ssi_crawl_workspace_t *ssi_crawl_workspace_alloc(int nvmax, int nemax)
 
@@ -40,12 +56,29 @@ ssi_crawl_workspace_t *ssi_crawl_workspace_alloc(int nvmax, int nemax)
   return w ;
 }
 
+/** 
+ * Initialise a crawl workspace with list of vertices
+ * 
+ * @param v list of vertices;
+ * @param vstr stride of data in \a v (must be at least two);
+ * @param nv number of vertices;
+ * @param w workspace to initialise.
+ * 
+ * @return 0 on success.
+ */
+
 int ssi_crawl_init(double *v, int vstr, int nv, ssi_crawl_workspace_t *w)
 
 {
   int i, *e, j ;
   double *x1, *x2 ;
 
+  if ( vstr < 2 ) {
+    fprintf(stderr, "%s: data stride vstr (%d) must be at least 2\n",
+	    __FUNCTION__, vstr) ;
+    exit(1) ;
+  }
+  
   if ( nv > ssi_crawl_workspace_vertex_number_max(w) ) {
     fprintf(stderr, "%s: not enough space (%d) for %d vertices\n",
 	    __FUNCTION__, ssi_crawl_workspace_vertex_number_max(w), nv) ;
@@ -91,6 +124,19 @@ static void insert_vertex(int *p, int *np, int v, int idx, int *tags)
   
   return ;
 }
+
+/** 
+ * Reconstruct a curve using the crawl algorithm of Parakkat and
+ * Muthuganapathy, Crawl through neighbors: a simple curve
+ * reconstruction algorithm, Eurographics Symposium on Geometry
+ * Processing 2016, https://dx.doi.org/10.1111/cgf.12974
+ * 
+ * @param w initialised workspace;
+ * @param p on exit contains list of indices of points on reconstructed curve; 
+ * @param np on exit, number of points on curve in \a p.
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_crawl(ssi_crawl_workspace_t *w, int *p, int *np)
 
@@ -196,3 +242,9 @@ int ssi_crawl(ssi_crawl_workspace_t *w, int *p, int *np)
   
   return 0 ;
 }
+
+/**
+ *
+ * @}
+ *
+ */

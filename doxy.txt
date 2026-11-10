@@ -1,0 +1,12 @@
+/**
+ @mainpage Surface-surface intersection
+ 
+ SSI is a small collection of files for calculating the intersection
+ of two surfaces
+*/
+
+/**
+ @defgroup functions Functions
+
+*/
+ 

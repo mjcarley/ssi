@@ -1,0 +1,14 @@
+\_form#0=150x14:$u'=u_{\min}+(u_{\max}-u_{\min})u$
+\_form#1=54x11:$0\leq u \leq 1$
+\_form#2=61x14:$[u_{\min}, u_{\max}]$
+\_form#3=11x10:$u'$
+\_form#4=96x14:$u'=(1+\cos\theta)/2$
+\_form#5=68x14:$\theta=\pi(1+u)$
+\_form#6=96x14:$u'=(\cos\theta - 1)/2$
+\_form#7=44x14:$u<1/2$
+\_form#8=96x14:$u'=(1-\cos\theta)/2$
+\_form#9=44x14:$u\geq 1/2$
+\_form#10=86x14:$\theta=2\pi(u-1/2)$
+\_form#11=86x14:$(1/r_{1},1/r_{2},1/r_{3}$
+\_form#12=74x14:$(u_{1},v_{1},u_{2},v_{2})$
+\_form#13=5x9:$i$

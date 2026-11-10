@@ -14,6 +14,13 @@ void qsort_r(void *base, size_t nmemb, size_t size,
 	     int (*compar)(const void *, const void *, void *),
 	     void *arg);
 
+/**
+ * @ingroup functions
+ *
+ * @{
+ * 
+ */
+
 static void swap_double_array(double *a, double *b, int n)
 
 {
@@ -26,6 +33,15 @@ static void swap_double_array(double *a, double *b, int n)
   
   return ;
 }
+
+/** 
+ * Linear mapping of coordinate, \f$u'=u_{\min}+(u_{\max}-u_{\min})u\f$
+ * 
+ * @param u input parameter \f$0\leq u \leq 1\f$;
+ * @param data pointer to double array of \f$[u_{\min}, u_{\max}]\f$
+ * 
+ * @return mapped coordinate \f$u'\f$.
+ */
 
 double ssi_mapping_linear(double u, void *data)
 
@@ -41,6 +57,16 @@ double ssi_mapping_linear(double u, void *data)
   return um ;
 }
 
+/** 
+ * Cosine mapping of coordinate, \f$u'=(1+\cos\theta)/2\f$, 
+ * \f$\theta=\pi(1+u)\f$
+ * 
+ * @param u input parameter \f$0\leq u \leq 1\f$;
+ * @param data not used, can be NULL.
+ * 
+ * @return mapped coordinate \f$u'\f$.
+ */
+
 double ssi_mapping_cosine(double u, void *data)
 
 {
@@ -53,6 +79,17 @@ double ssi_mapping_cosine(double u, void *data)
   return um ;
 }
 
+/** 
+ * Split cosine mapping of coordinate, \f$u'=(\cos\theta - 1)/2\f$, 
+ * \f$u<1/2\f$, \f$u'=(1-\cos\theta)/2\f$, \f$u\geq 1/2\f$, 
+ * \f$\theta=2\pi(u-1/2)\f$, 
+ * 
+ * @param u input parameter \f$0\leq u \leq 1\f$;
+ * @param data not used, can be NULL.
+ * 
+ * @return mapped coordinate \f$u'\f$.
+ */
+
 double ssi_mapping_split_cosine(double u, void *data)
 
 {
@@ -60,7 +97,8 @@ double ssi_mapping_split_cosine(double u, void *data)
   double um ;
 
   if ( u < 0.5  ) {
-    th = -M_PI + 2.0*M_PI*u ;
+    th = 2.0*(u - 0.5)*M_PI ;
+    /* th = -M_PI + 2.0*M_PI*u ; */
     um = 0.5*(cos(th) - 1) ;
   } else {
     th = 2.0*(u - 0.5)*M_PI ;
@@ -69,6 +107,14 @@ double ssi_mapping_split_cosine(double u, void *data)
 
   return um ;
 }
+
+/** 
+ * Allocate a new Bounding Volume Hierarchy.
+ * 
+ * @param depth maximum depth of tree in BVH.
+ * 
+ * @return pointer to newly allocated ::ssi_bvh_t.
+ */
 
 ssi_bvh_t *ssi_bvh_new(int depth)
 
@@ -106,6 +152,16 @@ ssi_bvh_t *ssi_bvh_new(int depth)
   return b ;
 }
 
+/** 
+ * Fill the surface grid of a Bounding Volume Hierarchy.
+ * 
+ * @param bvh BVH to be filled;
+ * @param sfunc ::ssi_surface_func_t to evaluate surface positions;
+ * @param data data to pass to \a sfunc.
+ * 
+ * @return 0 on success.
+ */
+
 int ssi_bvh_fill_grid(ssi_bvh_t *bvh, ssi_surface_func_t sfunc, void *data)
 
 {
@@ -121,10 +177,8 @@ int ssi_bvh_fill_grid(ssi_bvh_t *bvh, ssi_surface_func_t sfunc, void *data)
   
   n = 1 << bvh->depth ;
   for ( i = 0 ; i <= n ; i ++ ) {
-    /* u = ssi_bvh_u_global(bvh, (double)i/n) ; */
     u = umfunc((double)i/n, umdata) ;
     for ( j = 0 ; j <= n ; j ++ ) {
-      /* v = ssi_bvh_v_global(bvh, (double)j/n) ; */
       v = vmfunc((double)j/n, vmdata) ;
       if ( (ret = sfunc(u, v, &(bvh->x[(i*(n+1)+j)*3]), NULL, NULL, data)) ) {
 	return ret ;
@@ -136,6 +190,16 @@ int ssi_bvh_fill_grid(ssi_bvh_t *bvh, ssi_surface_func_t sfunc, void *data)
   
   return 0 ;
 }
+
+/** 
+ * Write the nodes of a surface grid to file.
+ * 
+ * @param f FILE pointer to which to write data;
+ * @param bvh ::ssi_bvh_t which has had its grid points allocated using 
+ * ::ssi_bvh_fill_grid; 
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_bvh_write_grid(FILE *f, ssi_bvh_t *bvh)
 
@@ -157,8 +221,24 @@ int ssi_bvh_write_grid(FILE *f, ssi_bvh_t *bvh)
   return 0 ;
 }
 
+/** 
+ * Write a surface grid to file.
+ * 
+ * @param f FILE pointer to which to write surface;
+ * @param sfunc surface function to be evaluated;
+ * @param data data to pass to \a sfunc;
+ * @param umin minimum value of u for surface nodes;
+ * @param umax maximum value of u for surface nodes;
+ * @param vmin minimum value of v for surface nodes;
+ * @param vmax maximum value of v for surface nodes;
+ * @param nu number of grid points in u;
+ * @param nv number of grid points v;
+ * 
+ * @return 0 on success.
+ */
+
 int ssi_surface_write_grid(FILE *f, 
-			   ssi_surface_func_t sfunc2, void *data,
+			   ssi_surface_func_t sfunc, void *data,
 			   double umin, double umax,
 			   double vmin, double vmax,
 			   int nu, int nv)
@@ -171,7 +251,7 @@ int ssi_surface_write_grid(FILE *f,
     u = umin + (umax - umin)*i/nu ;
     for ( j = 0 ; j <= nv ; j ++ ) {
       v = vmin + (vmax - vmin)*j/nv ;
-      sfunc2(u, v, x, NULL, NULL, data) ;
+      sfunc(u, v, x, NULL, NULL, data) ;
       fprintf(f, "%1.16e %1.16e %1.16e %1.16e %1.16e\n",
 	      x[0], x[1], x[2], u, v) ;
     }
@@ -179,6 +259,20 @@ int ssi_surface_write_grid(FILE *f,
 
   return 0 ;
 }
+
+/** 
+ * Find coordinates for bounding box containing bilinear patch
+ * 
+ * @param x1 coordinate of patch corner;
+ * @param x2 coordinate of patch corner;
+ * @param x3 coordinate of patch corner;
+ * @param x4 coordinate of patch corner;
+ * @param del increment by which to expand box to contain patch corners;
+ * @param b1 on exit, contains minimum coordinates of bounding box;
+ * @param b2 on exit, contains maximum coordinates of bounding box;
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_bvh_patch_bbox(double *x1, double *x2, double *x3, double *x4,
 		       double del, double *b1, double *b2)
@@ -198,6 +292,20 @@ int ssi_bvh_patch_bbox(double *x1, double *x2, double *x3, double *x4,
   
   return 0 ;
 }
+
+/** 
+ * Generate bounding boxes in Bounding Volume Hierarchy.
+ *
+ * When \a level is equal to tree depth, bounding boxes are generated
+ * to contain surface patches; at other levels, bounding boxes contain
+ * boxes at next level of tree.
+ * 
+ * @param bvh ::ssi_bvh_t with surface initialised;
+ * @param level level at which to find bounding boxes;
+ * @param del expansion increment of bounding boxes.
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_bvh_make_bboxes(ssi_bvh_t *bvh, int level, double del)
 
@@ -267,6 +375,19 @@ int ssi_bvh_make_bboxes(ssi_bvh_t *bvh, int level, double del)
   return 0 ;
 }
 
+/** 
+ * Write bounding boxes to file.
+ *
+ * Each line of output file contains point of minimum coordinates and
+ * maximum coordinates, six real values per line.
+ * 
+ * @param f FILE pointer to which to write data;
+ * @param bvh ::ssi_bvh_t whose bounding boxes are to be written;
+ * @param level level whose bounding boxes are to be written.
+ * 
+ * @return 0 on success.
+ */
+
 int ssi_bvh_write_bboxes(FILE *f, ssi_bvh_t *bvh, int level)
 
 {
@@ -285,6 +406,22 @@ int ssi_bvh_write_bboxes(FILE *f, ssi_bvh_t *bvh, int level)
   
   return 0 ;
 }
+
+/** 
+ * Test for intersection of a ray with an axis-aligned bounding box
+ * (slab) using method of Peter Shirley, Ingo Wald & Adam Marrs, Ray
+ * Axis-Aligned Bounding Box Intersection, 2021, 
+ * https://doi.org/10.1007/978-1-4842-7185-8_2
+ * 
+ * @param p0 minimum corner of bounding box;
+ * @param p1 maximum corner of bounding box;
+ * @param orig origin of ray
+ * @param invr inverse of ray directions \f$(1/r_{1},1/r_{2},1/r_{3}\f$; 
+ * @param rtmin minimum value of ray parameter for intersection;
+ * @param rtmax maximum value of ray parameter for intersection;
+ * 
+ * @return 0 if no intersection, 1 otherwise.
+ */
 
 int ssi_bbox_ray_slab_test(double *p0, double *p1,
 			   double *orig, double *invr,
@@ -368,6 +505,22 @@ static int intersection_check(ssi_bvh_t *bvh, int level, int nb,
   
   return 0 ;
 }
+
+/** 
+ * Find intersection of ray segment with bilinear patch surface by
+ * hierarchical tree traverse.
+ * 
+ * @param bvh ::ssi_bvh_t initialised with ::ssi_bvh_fill_grid and 
+ * ::ssi_bvh_make_bboxes;
+ * @param orig origin of ray;
+ * @param r direction of ray (not necessarily normalised);
+ * @param rtmin initial value of ray parameter on segment;
+ * @param rtmax final value of ray parameter on segment;
+ * @param uv on exit contains parameter values at intersection points;
+ * @param uvstr stride in \a uv.
+ * 
+ * @return number of intersections found.
+ */
 
 int ssi_bvh_ray_intersection(ssi_bvh_t *bvh,
 			     double *orig, double *r,
@@ -575,14 +728,31 @@ static int compare_points(const void *a, const void *b, void *data)
   return 0 ;
 }
 
+/** 
+ * Find points of intersection between two surfaces
+ *
+ * Points are output in \a c as list of surface parameters
+ * \f$(u_{1},v_{1},u_{2},v_{2})\f$ with entry \f$i\f$ at \c c[i*cstr]. 
+ * 
+ * @param bvh1 initialised ::ss_bvh_t for first surface;
+ * @param bvh2 initialised ::ss_bvh_t for second surface;
+ * @param c on exit contains list of intersection points in surface 
+ * parametric spaces;
+ * @param cstr stride between intersection points in \a c (must be at least 
+ * four); 
+ * @param nc on exit, number of intersection points;
+ * @param ncmax maximum number of intersection points (size of \a c);
+ * @param tol tolerance for convergence of intersection points (square of 
+ * distance between points as evaluated on the two surfaces);
+ * @param work workspace, size at least 27 doubles.
+ * 
+ * @return 0 on success.
+ */
+
 int ssi_surface_surface_intersection(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
 				     double *c, int cstr, int *nc, int ncmax,
 				     double tol, double *work)
 
-/*
- * minimum size of work is 27 doubles
- */
-  
 {
   int i, j, n ;
 
@@ -637,6 +807,21 @@ int ssi_surface_surface_intersection(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
   
   return 0 ;
 }
+
+/** 
+ * Sort intersection points found using
+ * ::ssi_surface_surface_intersection and find duplicates
+ *
+ * Points are sorted by coordinates on first surface.
+ * 
+ * @param c list of intersection points from ::ssi_surface_surface_intersection;
+ * @param cstr stride in \a c;
+ * @param nc number of intersection points;
+ * @param dup on exit, contains indices of points duplicated on first surface;
+ * @param nd number of duplicate points.
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_curve_sort_points(double *c, int cstr, int nc, int *dup, int *nd)
 
@@ -749,6 +934,37 @@ static void uv_midpoint(double *uv1, double *uv2, double *uv, int *fix)
   
   return ;
 }
+
+/** 
+ * Join intersection points into intersection curves.
+ *
+ * Intersection curves are output as a list of indices in \a p and
+ * individual curves in the list are found using the break points in
+ * \a brks:
+ *
+ * \code
+ * for ( i = 0 ; i < nb ; i ++ ) {
+ *   for ( j = brks[i] ; j < brks[i+1] ; j ++ ) {
+ *     pointer to coordinates on curve is &(c[p[j]*cstr])
+ *   }
+ * }
+ * \endcode
+ * 
+ * @param bvh1 initialised ::ss_bvh_t for first surface;
+ * @param bvh2 initialised ::ss_bvh_t for second surface;
+ * @param c list of intersection points from 
+ * ::ssi_surface_surface_intersection, sorted by ::ssi_curve_sort_points;
+ * @param cstr stride in \a c;
+ * @param nc number of intersection points;
+ * @param dup list of duplicates from ::ssi_curve_sort_points;
+ * @param nd number of duplicate points.
+ * @param p on exit, ordered indices of points on intersection curves;
+ * @param brks indices in \a p of breakpoints between curves;
+ * @param nb on exit, number of breakpoints;
+ * @param ws workspace, at least 27 doubles.
+ * 
+ * @return 0 on success.
+ */
 
 int ssi_curve_join_points(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
 			  double *c, int cstr, int *nc, int *dup, int nd,
@@ -890,3 +1106,9 @@ int ssi_point_is_boundary(double *v)
   
   return 0 ;
 }
+
+/**
+ *
+ * @}
+ *
+ */

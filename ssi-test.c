@@ -288,16 +288,10 @@ int main(int argc, char **argv)
   nc = 0 ; nd = 0 ;
   ssi_surface_surface_intersection(bvh1, bvh2, c, cstr, &nc, ncmax, tol, work) ;
   ssi_curve_sort_points(c, cstr, nc, dup, &nd) ;
-
-  /* for ( i = 0 ; i < nd ; i ++ ) { */
-  /*   fprintf(stderr, "%d %d\n", dup[i*2+0], dup[i*2+1]) ; */
-  /* } */
   
   fprintf(stderr, "%d intersection points\n", nc) ;
 
   if ( nc == 0 ) return 0 ;
-  
-  /* fprintf(stderr, "%d duplicate points\n", nd) ; */
   
   ssi_delaunay(c, cstr, nc - nd , ws->e, &(ws->ne), work) ;
   ssi_crawl_init(c, cstr, nc - nd , ws) ;
