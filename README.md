@@ -64,3 +64,9 @@ Intersection points are output as
 where $(x_i,y_i,z_i)$ is position calculated in surface $i$ and the
 parametric coordinates $(u_i,v_i)$ are those in the $(0,1)\times(0,1)$
 space. 
+
+# Improvements
+
+I would like to add a built-in Delaunay triangulation function to
+remove the requirement to use TRIANGLE. A possible upgrade would be to
+add a curve tracing element to supplement the curve reconstruction. 
