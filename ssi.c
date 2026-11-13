@@ -997,7 +997,8 @@ int ssi_curve_join_points(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
       }      
     }
 
-    brks[(*nb) + 1] = brks[(*nb)] + np ; (*nb) ++ ;
+    /* brks[(*nb) + 1] = brks[(*nb)] + np ; (*nb) ++ ; */
+    brks[(*nb) + 1] = np ; (*nb) ++ ;
     ssi_crawl(ws, &(p[brks[(*nb)]]), &np) ;
   }
 
