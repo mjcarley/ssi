@@ -971,13 +971,13 @@ int ssi_curve_join_points(ssi_bvh_t *bvh1, ssi_bvh_t *bvh2,
 			  int *p, int *brks, int *nb, ssi_crawl_workspace_t *ws)
 
 {
-  int np, i, j, k, n, pc, pf, off, fix ;
-  double *x1, *x2, d1, d2, *uv, work[27] ;
+  int np, i, j, pc, pf, off, fix ;
+  double *x1, *x2, d1, *uv, work[27] ;
   
   brks[0] = 0 ; *nb = 0 ;
 
   d1 = 1.0 / (1 << bvh1->depth ) ;
-  d2 = 1.0 / (1 << bvh2->depth ) ;
+  /* d2 = 1.0 / (1 << bvh2->depth ) ; */
 
   ws->dlim = 2.0*M_SQRT2*d1 ;
   ssi_crawl(ws, &(p[brks[(*nb)]]), &np) ;
